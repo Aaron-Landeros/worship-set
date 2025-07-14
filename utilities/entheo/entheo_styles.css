@@ -1,293 +1,98 @@
-
 @media (min-width: 992px) {
-  .w-lg-10 { width: 10% !important; }
-  .w-lg-20 { width: 20% !important; }
-  .w-lg-30 { width: 30% !important; }
-  .w-lg-40 { width: 40% !important; }
-  .w-lg-50 { width: 50% !important; }
-  .w-lg-60 { width: 60% !important; }
-  .w-lg-70 { width: 70% !important; }
-  .w-lg-80 { width: 80% !important; }
-  .w-lg-90 { width: 90% !important; }
-  .w-lg-100 { width: 100% !important; }
+  .w-lg-10 {
+    width: 10% !important;
+  }
+
+  .w-lg-20 {
+    width: 20% !important;
+  }
+
+  .w-lg-30 {
+    width: 30% !important;
+  }
+
+  .w-lg-40 {
+    width: 40% !important;
+  }
+
+  .w-lg-50 {
+    width: 50% !important;
+  }
+
+  .w-lg-60 {
+    width: 60% !important;
+  }
+
+  .w-lg-70 {
+    width: 70% !important;
+  }
+
+  .w-lg-80 {
+    width: 80% !important;
+  }
+
+  .w-lg-90 {
+    width: 90% !important;
+  }
+
+  .w-lg-100 {
+    width: 100% !important;
+  }
 }
 
 @media (max-width: 991px) {
-  .w-sm-10 { width: 10% !important; }
-  .w-sm-20 { width: 20% !important; }
-  .w-sm-30 { width: 30% !important; }
-  .w-sm-40 { width: 40% !important; }
-  .w-sm-50 { width: 50% !important; }
-  .w-sm-60 { width: 60% !important; }
-  .w-sm-70 { width: 70% !important; }
-  .w-sm-80 { width: 80% !important; }
-  .w-sm-90 { width: 90% !important; }
-  .w-sm-100 { width: 100% !important; }
+  .w-sm-10 {
+    width: 10% !important;
+  }
+
+  .w-sm-20 {
+    width: 20% !important;
+  }
+
+  .w-sm-30 {
+    width: 30% !important;
+  }
+
+  .w-sm-40 {
+    width: 40% !important;
+  }
+
+  .w-sm-50 {
+    width: 50% !important;
+  }
+
+  .w-sm-60 {
+    width: 60% !important;
+  }
+
+  .w-sm-70 {
+    width: 70% !important;
+  }
+
+  .w-sm-80 {
+    width: 80% !important;
+  }
+
+  .w-sm-90 {
+    width: 90% !important;
+  }
+
+  .w-sm-100 {
+    width: 100% !important;
+  }
 }
 
-/* #app_content {
-  padding: 50px;
-  display: flex; 
-  justify-content: center;
+/* Importing Google Fonts - Poppins */
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
 
-}  */
-
-.main-container {
-  display:flex;
-  height: 100vh;
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: "Poppins", sans-serif;
 }
 
-.main-content-container {
-  flex-grow: 1;
-  padding-top: 5px;
-}
-
-
-.table_wrapper {
-  height: 60vh;
-  overflow-y: scroll;
-}
-
-.table-responsive{
-  max-height: calc(100vh - 170px); /* Ajusta el 150px según el tamaño de tu navbar/header */
-  overflow-y: auto;
-}
-
-.bg-main-color {
-  background-color: #44546a !important;
-  color: #ffffff !important;
-}
-
-.modal-backdrop-custom {
-  background-color: rgba(0, 0, 0, 0.562);
-  z-index: 1001;
-}
-
-.second-modal-backdrop-custom {
-  z-index: 1002;
-  background-color: rgba(0, 0, 0, 0.562);
-}
-
-.pointer {
-  cursor: pointer;
-}
-
-.fa-arrows-rotate {
-  transition: transform 0.3s ease-in-out; 
-}
-
-.fa-arrows-rotate:hover{
-  transform: rotate(180deg);
-
-}
-
-.fs-mini{
-  font-size: 13px !important;
-}
-
-.cell-input-sm{
-  width: 110px;
-}
-/* Spinner */
-#loading-spinner .spinner-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(255, 255, 255, 0.8);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 10050; 
-}
-
-#loading-spinner .spinner-border {
-  width: 3rem;
-  height: 3rem;
-}
-
-.text-xxl{
-  font-size: 100px !important;
-}
-/* End Spinner */
-
-/* ============================== Sidebar ============================================ */
-
-.sidebar {
-  z-index: 2000;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  height: 100vh;
-  width: 50px;
-  background-color: #000000 !important;
-  transition: width 0.3s;
-}
-
-.sidebar:hover {
-  width: 200px;
-}
-
-.sidebar .nav-item {
-  width: 100%;
-}
-
-.sidebar .nav-link {
-  color: #ffffff;
-  display: flex;
-  align-items: center;
-  padding: 15px;
-}
-
-.sidebar .nav-link:hover {
-  background-color: #ffffff;
-  color: #000000 !important;
-}
-
-.sidebar a {
-  cursor: pointer;
-}
-
-.sidebar .nav-link i {
-  font-size: 40px;
-  margin-right: 10px;
-}
-
-.sidebar .nav-link span {
-  font-size: 20px;
-  display: none;
-  transition: display 0.5s, opacity 0.5s, transform 0.5s;
-}
-
-.sidebar img {
-  display: none;
-  transition: display 0.5s, opacity 0.5s, transform 0.5s;
-}
-
-.sidebar:hover img {
-  display: inline;
-  transform: translateY(0);
-}
-
-.sidebar:hover .nav-link span {
-  display: inline;
-  transform: translateY(0);
-}tem-accordion-boxes{
-  background-color: #212529 !important;
-  text-decoration: none !important;
-}
-
-.nav-link{
-  background-color: #212529 !important;
-  color: white !important;
-}
-
-.nav-link:hover{
-  background-color: white !important;
-  color: #212529 !important;
-}
-
-.nav-link.active{
-  background-color: white !important;
-  color: #212529 !important;
-}
-
-/* ====================================================================================== */
-.dropdown-item:hover {
-  background-color: #0d6efd !important;
-  color: #ffffff !important;
-  cursor: pointer;
-}
-
-/* Context menu Item Row */
-
-.table-hover tbody tr:hover {
-  background-color: transparent !important; /* Elimina el color de Bootstrap */
-}
-
-.accordion_row:hover td {
-  background-color: rgba(0, 123, 255, 0.3) !important;
-}
-
-
-
-.delete-item:hover {
-  background-color: #dc3545 !important;
-  color: #ffffff !important;
-  cursor: pointer;
-}
-
-.row-item-to-delete td{
-  background-color: #dc3546b6 !important;
-  color: #ffffff !important;
-}
-
-.selected-row {
-  background-color: rgba(0, 123, 255, 0.3) !important;
-}
-
-.hover-effect td {
-  border-bottom: 2px dashed #007bff !important;
-}
-
-.selected-row td,
-.hover-effect td {
-  background-color: rgba(0, 123, 255, 0.3) !important;
-}
-
-.custom-submenu{
-  margin-left: 140px !important;
-}
-
-.row-estimate-item-to-delete td{
-  background-color: #ff0019fd !important;
-  color: #ffffff !important;
-}
-
-.row-estimate-item-to-copy td {
-  background-color: rgba(40, 167, 69, 0.3) !important;
-  border-top: 2px dashed #28a745 !important;
-  border-bottom: 2px dashed #28a745 !important;
-}
-
-/* Context menu Accordion Group */
-
-.remove-group-accordion:hover {
-  background-color: #dc3545 !important;
-  color: #ffffff !important;
-  cursor: pointer;
-}
-
-.row-accordion-to-delete td{
-  background-color: #dc3546b6 !important;
-  color: #ffffff !important;
-}
-
-.row-estimate-accordion-to-copy td {
-  background-color: rgba(40, 167, 69, 0.3) !important;
-  border-top: 2px dashed #28a745 !important;
-  border-bottom: 2px dashed #28a745 !important;
-}
-
-/* ======================================== LOGIN ============================================== */
-
-.message-container-header{
-  background-color: #ffffff !important;
-}
-
-.border-dark-input {
-  border-color: #3f4044 !important;
-}
-
-.text-login {
-  color: rgba(255, 255, 255, 0.5) !important;
-}
-
-#offcanvas_labor_items{
-  margin-left: 80px;
-}
-
-.width_table{
-  width: 8%;
+body {
+  min-height: 100vh;
+  background: linear-gradient(#F1F3FF, #CBD4FF);
 }

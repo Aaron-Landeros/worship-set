@@ -12,7 +12,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 switch ($user_request) {
     case 'verify_login':
         try{
-            include '../../utilities/db_conn.php';
+            include '../../../utilities/db_conn.php';
             $db = new PDO($dsn, $username, $password);
 
             $email = filter_input(INPUT_POST, 'email');
@@ -25,9 +25,16 @@ switch ($user_request) {
                 $user_data = fetch_users($db, $email);
     
                 $_SESSION["id"] = $user_data['id'];  // Cambié $data['id'] por $user_data['id']
+                $_SESSION["church_id"] = $user_data['church_id'];
                 $_SESSION["name"] = $user_data['name'];
                 $_SESSION["email"] = $user_data['email'];
                 $_SESSION["role"] = $user_data['role'];
+                $_SESSION["team_id"] = $user_data['team_id'] ?? null;  // Manejo de team_id si no existe
+                $_SESSION["is_leader"] = $user_data['is_leader'] ?? false;  // Manejo de is_leader si no existe
+                $_SESSION["position"] = $user_data['position'] ?? null;  // Manejo de position si no existe
+                $_SESSION["teams"] = $user_data['teams'] ?? [];
+                $_SESSION["leader_teams"] = $user_data['leader_teams'] ?? [];
+
 
                
                 ob_start();

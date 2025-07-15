@@ -292,16 +292,17 @@ $(function () {
         });
     });
 
-    $(document).on('click', '#fetch_events', function (e) {
-        e.preventDefault();
+    $(document).on('click', '#btn_view_schedule', function () {
+        const serviceId = $(this).data('service-id');
         $.ajax({
             url: admin_controller,
             type: 'POST',
-            data: { user_request: 'fetch_events' },
+            data: { user_request: 'fetch_service_schedule', service_id: serviceId },
             success: function (data) {
                 var response = JSON.parse(data);
                 if (response.status === 'success') {
-                    $('#app-content').html(response.view);
+                    $('#modal-container').append(response.view);
+                    $('#viewScheduleModal').modal('show');
                 } else {
                     Swal.fire({
                         icon: 'error',
@@ -314,8 +315,104 @@ $(function () {
                 Swal.fire({
                     icon: 'error',
                     title: 'Error',
-                    text: 'An error occurred while fetching events.'
+                    text: 'An error occurred while fetching the service schedule.'
                 });
+            }
+        });
+    });
+
+    $(document).on('hide.bs.modal', '#viewScheduleModal', function () {
+        $(this).remove();
+        $('#modal-container').empty();
+    });
+
+    $(document).on('click', '#btn_manage_setlist', function () {
+        const serviceId = $(this).data('service-id');
+        const segmentId = $(this).data('segment-id');
+        $.ajax({
+            url: admin_controller,
+            type: 'POST',
+            data: { user_request: 'fetch_manage_setlist', service_id: serviceId, segment_id: segmentId },
+            success: function (data) {
+                var response = JSON.parse(data);
+                if (response.status === 'success') {
+                    $('#modal-container').append(response.view);
+                    $('#manageSetlistModal').modal('show');
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: response.message
+                    });
+                }
+            },
+            error: function () {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'An error occurred while fetching the setlist.'
+                });
+            }
+        });
+    });
+
+    $(document).on('hide.bs.modal', '#manageSetlistModal', function () {
+        $(this).remove();
+        $(this).closest('.modal-backdrop').remove();
+    });
+
+    $(document).on('click', '#btn_add_song_to_setlist', function () {
+        const serviceId = $(this).data('service-id');
+        const segmentId = $(this).data('segment-id');
+        const songId = $('#song_to_select').val();
+        let songKey = $('#song_key').val();
+
+        if (!songId) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Warning',
+                text: 'Please select a song to add to the setlist.'
+            });
+            return;
+        }
+
+        $.ajax({
+            url: admin_controller,
+            type: 'POST',
+            data: { user_request: 'add_song_to_setlist', service_id: serviceId, segment_id: segmentId, song_id: songId, song_key: songKey },
+            success: function (data) {
+                var response = JSON.parse(data);
+                if (response.status === 'success') {
+                   $('#setlist_songs').html(response.view);
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Success',
+                        text: response.message
+                    });
+                }
+            }
+        });
+    });
+
+    $(document).on('click', '.btn_remove_setlist_song', function () {
+        const serviceId = $(this).data('service-id');
+        const segmentId = $(this).data('segment-id');
+        const songId = $(this).data('song-id');
+
+        $.ajax({
+            url: admin_controller,
+            type: 'POST',
+            data: { user_request: 'remove_song_from_setlist', service_id: serviceId, segment_id: segmentId, song_id: songId },
+            success: function (data) {
+                var response = JSON.parse(data);
+                if (response.status === 'success') {
+                    $('#setlist_songs').html(response.view);
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Success',
+                        text: response.message
+                    });
+                }
             }
         });
     });

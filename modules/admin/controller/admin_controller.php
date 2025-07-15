@@ -182,6 +182,7 @@ switch ($user_request) {
             $is_admin = $_SESSION['role'] === 'admin';
             $user_teams = fetch_teams_by_user_id($db, $session_user_id);
 
+
             if ($service) {
                 ob_start();
                 include '../components/services/components/modal/service_details.php';
@@ -191,6 +192,146 @@ switch ($user_request) {
             } else {
                 echo json_encode(['status' => 'error', 'message' => 'Service not found']);
             }
+        } catch (PDOException | ErrorException | Exception $e) {
+            error_log('Database Error: ' . $e->getMessage());
+            $message = $development_mode ? 'Database error occurred: ' . $e->getMessage() : $user_message;
+            echo json_encode(['status' => 'error', 'message' => $e->getMessage()]);
+        }
+        break;
+
+    case 'fetch_service_schedule':
+        try {
+            include '../../../utilities/db_conn.php';
+            $db = new PDO($dsn, $username, $password);
+
+            $service_id = filter_input(INPUT_POST, 'service_id');
+
+            // Traer datos del servicio
+            $service = fetch_service_details($db, $service_id, $church_id);
+            $segments = fetch_segments_by_service_id($db, $service_id);
+            $is_admin = $_SESSION['role'] === 'admin';
+            $user_teams = fetch_teams_by_user_id($db, $session_user_id);
+
+            if ($service) {
+                ob_start();
+                include '../components/services/components/modal/view_schedule_modal.php';
+                $content = ob_get_clean();
+
+                echo json_encode(['status' => 'success', 'message' => 'Service schedule fetched successfully', 'view' => $content, 'is_admin' => $is_admin, 'user_teams' => $user_teams]);
+            } else {
+                echo json_encode(['status' => 'error', 'message' => 'Service not found']);
+            }
+        } catch (PDOException | ErrorException | Exception $e) {
+            error_log('Database Error: ' . $e->getMessage());
+            $message = $development_mode ? 'Database error occurred: ' . $e->getMessage() : $user_message;
+            echo json_encode(['status' => 'error', 'message' => $e->getMessage()]);
+        }
+        break;
+
+    case 'fetch_manage_setlist':
+        try {
+            include '../../../utilities/db_conn.php';
+            $db = new PDO($dsn, $username, $password);
+
+            $service_id = filter_input(INPUT_POST, 'service_id');
+            $segment_id = filter_input(INPUT_POST, 'segment_id');
+            $segment = fetch_segment_by_id($db, $segment_id, $service_id);
+            $songs = fetch_all_songs($db, $church_id);
+            $worship_team_members = fetch_available_musicians($db, $church_id);
+            // Actualizar el setlist después de agregar la canción
+            $setlist = fetch_segment_setlist($db, $segment_id);
+            
+            $assignments = fetch_segment_assignments($db, $segment_id);
+
+
+            if ($segment) {
+                ob_start();
+                include '../components/services/components/modal/manage_setlist_modal.php';
+                $content = ob_get_clean();
+
+                echo json_encode(['status' => 'success', 'message' => 'Manage setlist modal loaded', 'view' => $content]);
+            } else {
+                echo json_encode(['status' => 'error', 'message' => 'Segment not found']);
+            }
+        } catch (PDOException | ErrorException | Exception $e) {
+            error_log('Database Error: ' . $e->getMessage());
+            $message = $development_mode ? 'Database error occurred: ' . $e->getMessage() : $user_message;
+            echo json_encode(['status' => 'error', 'message' => $e->getMessage()]);
+        }
+        break;
+
+    case 'add_song_to_setlist':
+        try {
+            include '../../../utilities/db_conn.php';
+            $db = new PDO($dsn, $username, $password);
+
+            $service_id = filter_input(INPUT_POST, 'service_id', FILTER_SANITIZE_NUMBER_INT);
+            $segment_id = filter_input(INPUT_POST, 'segment_id', FILTER_SANITIZE_NUMBER_INT);
+            $song_id = filter_input(INPUT_POST, 'song_id', FILTER_SANITIZE_NUMBER_INT);
+            $song_key = filter_input(INPUT_POST, 'song_key');
+
+            if (!$song_id || !$segment_id) {
+                throw new Exception('Song and segment are required.');
+            }
+
+            add_song_to_setlist($db, $service_id, $segment_id, $song_id, $song_key);
+
+            // Actualizar el setlist después de agregar la canción
+            $setlist = fetch_segment_setlist($db, $segment_id);
+
+            $content = '';
+            ob_start();
+            foreach ($setlist as $song) :
+                $song_id = $song['song_id'];
+                $song = fetch_song_data($db, $song_id);
+                $song_key = $song['key_signature'] ?: 'Original';
+                $song['title'] = htmlspecialchars($song['title']);
+                
+                include '../components/services/components/card/setlist_songs_card.php';
+            endforeach;
+
+            $content .= ob_get_clean();
+            
+            echo json_encode(['status' => 'success', 'message' => 'Song added to setlist successfully', 'view' => $content]);
+        } catch (PDOException | ErrorException | Exception $e) {
+            error_log('Database Error: ' . $e->getMessage());
+            $message = $development_mode ? 'Database error occurred: ' . $e->getMessage() : $user_message;
+            echo json_encode(['status' => 'error', 'message' => $e->getMessage()]);
+        }
+        break;
+
+    case 'remove_song_from_setlist':
+        try {
+            include '../../../utilities/db_conn.php';
+            $db = new PDO($dsn, $username, $password);
+
+            $service_id = filter_input(INPUT_POST, 'service_id', FILTER_SANITIZE_NUMBER_INT);
+            $segment_id = filter_input(INPUT_POST, 'segment_id', FILTER_SANITIZE_NUMBER_INT);
+            $song_id = filter_input(INPUT_POST, 'song_id', FILTER_SANITIZE_NUMBER_INT);
+
+            if (!$song_id || !$segment_id) {
+                throw new Exception('Song and segment are required.');
+            }
+
+            remove_song_from_setlist($db, $service_id, $segment_id, $song_id);
+
+            // Actualizar el setlist después de eliminar la canción
+            $setlist = fetch_segment_setlist($db, $segment_id);
+
+            $content = '';
+            ob_start();
+            foreach ($setlist as $song) :
+                $song_id = $song['song_id'];
+                $song = fetch_song_data($db, $song_id);
+                $song_key = $song['key_signature'] ?: 'Original';
+                $song['title'] = htmlspecialchars($song['title']);
+                
+                include '../components/services/components/card/setlist_songs_card.php';
+            endforeach;
+
+            $content .= ob_get_clean();
+            
+            echo json_encode(['status' => 'success', 'message' => 'Song removed from setlist successfully', 'view' => $content]);
         } catch (PDOException | ErrorException | Exception $e) {
             error_log('Database Error: ' . $e->getMessage());
             $message = $development_mode ? 'Database error occurred: ' . $e->getMessage() : $user_message;

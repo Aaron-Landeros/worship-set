@@ -282,3 +282,156 @@
             ]);
         }
     }
+
+    function fetch_all_songs($db, $church_id) {
+        try {
+            $query = "SELECT * FROM songs WHERE church_id = :church_id ORDER BY title";
+            $stmt = $db->prepare($query);
+            $stmt->bindValue(':church_id', $church_id);
+            $stmt->execute();
+            return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        } catch (PDOException $e) {
+            error_log("Database error in fetch_all_songs: " . $e->getMessage());
+            throw $e;
+        } catch (Exception $e) {
+            error_log("Error in fetch_all_songs: " . $e->getMessage());
+            throw $e;
+        }
+    }
+
+    function fetch_segment_songs($db, $segment_id) {
+        try {
+            $query = "SELECT ss.id AS setlist_id, songs.title, songs.artist, songs.key_signature
+                    FROM segment_songs ss
+                    JOIN songs ON ss.song_id = songs.id
+                    WHERE ss.segment_id = :segment_id
+                    ORDER BY ss.order_index ASC";
+            $stmt = $db->prepare($query);
+            $stmt->bindValue(':segment_id', $segment_id);
+            $stmt->execute();
+            return $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        } catch (PDOException $e) {
+            error_log("Database error in fetch_segment_songs: " . $e->getMessage());
+            throw $e;
+        } catch (Exception $e) {
+            error_log("Error in fetch_segment_songs: " . $e->getMessage());
+            throw $e;
+        }
+    }
+
+    function fetch_segment_by_id($db, $segment_id, $service_id) {
+        try {
+            $query = "SELECT * FROM service_segments WHERE id = :segment_id AND service_id = :service_id";
+            $stmt = $db->prepare($query);
+            $stmt->bindValue(':segment_id', $segment_id);
+            $stmt->bindValue(':service_id', $service_id);
+            $stmt->execute();
+            return $stmt->fetch(PDO::FETCH_ASSOC);
+        } catch (PDOException $e) {
+            error_log("Database error in fetch_segment_by_id: " . $e->getMessage());
+            throw $e;
+        }
+    }
+
+    function fetch_available_musicians($db, $church_id) {
+        try {
+            $query = "SELECT 
+                    u.id AS user_id,
+                    u.name AS user_name,
+                    u.email,
+                    tm.position
+                FROM team_members tm
+                INNER JOIN users u ON tm.user_id = u.id
+                INNER JOIN teams t ON tm.team_id = t.id
+                WHERE 
+                    t.name = 'Worship Team'
+                    AND t.church_id = :church_id
+                    AND u.status = 'active'
+                ORDER BY u.name
+            ";
+
+            $stmt = $db->prepare($query);
+            $stmt->bindValue(':church_id', $church_id);
+            $stmt->execute();
+            return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        } catch (PDOException $e) {
+            error_log("Database error in fetch_available_musicians: " . $e->getMessage());
+            throw $e;
+        } catch (Exception $e) {
+            error_log("Error in fetch_available_musicians: " . $e->getMessage());
+            throw $e;
+        }
+    }
+
+    function fetch_segment_setlist($db, $segment_id) {
+        $query = "SELECT * FROM worship_setlist WHERE segment_id = :segment_id ORDER BY sort_order ASC";
+        $stmt = $db->prepare($query);
+        $stmt->bindValue(':segment_id', $segment_id);
+        $stmt->execute();
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    function fetch_segment_assignments($db, $segment_id) {
+        $query = "SELECT 
+                    sa.*, u.name AS user_name
+                FROM segment_assignments sa
+                JOIN users u ON sa.user_id = u.id
+                WHERE sa.segment_id = :segment_id";
+        $stmt = $db->prepare($query);
+        $stmt->bindValue(':segment_id', $segment_id);
+        $stmt->execute();
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+
+    function add_song_to_setlist($db, $service_id, $segment_id, $song_id, $song_key) {
+        try {
+            $query = "INSERT INTO worship_setlist (service_id, segment_id, song_id, key_signature) VALUES (:service_id, :segment_id, :song_id, :key_signature)";
+            $stmt = $db->prepare($query);
+            $stmt->bindValue(':service_id', $service_id);
+            $stmt->bindValue(':segment_id', $segment_id);
+            $stmt->bindValue(':song_id', $song_id);
+            $stmt->bindValue(':key_signature', $song_key);
+            $stmt->execute();
+        } catch (PDOException $e) {
+            error_log("Database error in add_song_to_setlist: " . $e->getMessage());
+            throw $e;
+        } catch (Exception $e) {
+            error_log("Error in add_song_to_setlist: " . $e->getMessage());
+            throw $e;
+        }
+    }
+
+    function fetch_song_data($db, $song_id) {
+        try {
+            $query = "SELECT * FROM songs WHERE id = :song_id";
+            $stmt = $db->prepare($query);
+            $stmt->bindValue(':song_id', $song_id);
+            $stmt->execute();
+            return $stmt->fetch(PDO::FETCH_ASSOC);
+        } catch (PDOException $e) {
+            error_log("Database error in fetch_song_data: " . $e->getMessage());
+            throw $e;
+        } catch (Exception $e) {
+            error_log("Error in fetch_song_data: " . $e->getMessage());
+            throw $e;
+        }
+    }
+
+    function remove_song_from_setlist($db, $service_id, $segment_id, $song_id) {
+        try {
+            $query = "DELETE FROM worship_setlist WHERE service_id = :service_id AND segment_id = :segment_id AND song_id = :song_id";
+            $stmt = $db->prepare($query);
+            $stmt->bindValue(':service_id', $service_id);
+            $stmt->bindValue(':segment_id', $segment_id);
+            $stmt->bindValue(':song_id', $song_id);
+            $stmt->execute();
+        } catch (PDOException $e) {
+            error_log("Database error in remove_song_from_setlist: " . $e->getMessage());
+            throw $e;
+        } catch (Exception $e) {
+            error_log("Error in remove_song_from_setlist: " . $e->getMessage());
+            throw $e;
+        }
+    }

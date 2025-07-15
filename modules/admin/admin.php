@@ -55,7 +55,7 @@
         </div>
 
         <div class="col-12 col-md-6 col-lg-4">
-            <a class="text-decoration-none">
+            <a class="text-decoration-none" id="fetch_songs">
                 <div class="card card-gradient-songs text-white text-center shadow h-100 transition">
                     <div class="card-body d-flex flex-column justify-content-center align-items-center">
                         <span class="material-symbols-rounded mb-3">library_music</span>

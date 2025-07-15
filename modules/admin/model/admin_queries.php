@@ -365,23 +365,59 @@
     }
 
     function fetch_segment_setlist($db, $segment_id) {
-        $query = "SELECT * FROM worship_setlist WHERE segment_id = :segment_id ORDER BY sort_order ASC";
-        $stmt = $db->prepare($query);
-        $stmt->bindValue(':segment_id', $segment_id);
-        $stmt->execute();
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        try {
+            $query = "SELECT * FROM worship_setlist WHERE segment_id = :segment_id ORDER BY sort_order ASC";
+            $stmt = $db->prepare($query);
+            $stmt->bindValue(':segment_id', $segment_id);
+            $stmt->execute();
+            return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        } catch (PDOException $e) {
+            error_log("Database error in fetch_segment_setlist: " . $e->getMessage());
+            throw $e;
+        } catch (Exception $e) {
+            error_log("Error in fetch_segment_setlist: " . $e->getMessage());
+            throw $e;
+        }
+    }
+
+    function fetch_segment_setlist_song_data($db, $segment_id) {
+        try {
+            $query = "SELECT ws.*, s.title, s.artist, s.key_signature
+                FROM worship_setlist ws
+                JOIN songs s ON ws.song_id = s.id
+                WHERE ws.segment_id = :segment_id
+                ORDER BY ws.sort_order ASC";
+            $stmt = $db->prepare($query);
+            $stmt->bindValue(':segment_id', $segment_id);
+            $stmt->execute();
+            return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        } catch (PDOException $e) {
+            error_log("Database error in fetch_segment_setlist: " . $e->getMessage());
+            throw $e;
+        } catch (Exception $e) {
+            error_log("Error in fetch_segment_setlist: " . $e->getMessage());
+            throw $e;
+        }
     }
 
     function fetch_segment_assignments($db, $segment_id) {
-        $query = "SELECT 
+        try {
+            $query = "SELECT 
                     sa.*, u.name AS user_name
                 FROM segment_assignments sa
                 JOIN users u ON sa.user_id = u.id
                 WHERE sa.segment_id = :segment_id";
-        $stmt = $db->prepare($query);
-        $stmt->bindValue(':segment_id', $segment_id);
-        $stmt->execute();
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+            $stmt = $db->prepare($query);
+            $stmt->bindValue(':segment_id', $segment_id);
+            $stmt->execute();
+            return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        } catch (PDOException $e) {
+            error_log("Database error in fetch_segment_assignments: " . $e->getMessage());
+            throw $e;
+        } catch (Exception $e) {
+            error_log("Error in fetch_segment_assignments: " . $e->getMessage());
+            throw $e;
+        }
     }
 
 
@@ -432,6 +468,75 @@
             throw $e;
         } catch (Exception $e) {
             error_log("Error in remove_song_from_setlist: " . $e->getMessage());
+            throw $e;
+        }
+    }
+
+    function search_musicians($db, $query, $church_id) {
+        try {
+            $like_query = "%" . $query . "%";
+
+            $sql = "SELECT 
+                    u.id,
+                    u.name,
+                    u.email,
+                    tm.position,
+                    tm.is_leader,
+                    t.name AS team_name
+                FROM users u
+                INNER JOIN team_members tm ON u.id = tm.user_id
+                INNER JOIN teams t ON tm.team_id = t.id
+                WHERE 
+                    u.church_id = :church_id
+                    AND u.status = 'active'
+                    AND t.name = 'Worship Team'
+                    AND (u.name LIKE :query OR u.email LIKE :query)
+                ORDER BY u.name ASC LIMIT 1
+            ";
+
+            $stmt = $db->prepare($sql);
+            $stmt->bindValue(':church_id', $church_id, PDO::PARAM_INT);
+            $stmt->bindValue(':query', $like_query, PDO::PARAM_STR);
+            $stmt->execute();
+
+            return $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        } catch (PDOException $e) {
+            error_log("Database error in search_musicians: " . $e->getMessage());
+            throw $e;
+        } catch (Exception $e) {
+            error_log("Error in search_musicians: " . $e->getMessage());
+            throw $e;
+        }
+    }
+
+    function save_segment_assignments($db, $segment_id, $assignments) {
+        try {
+            // 1. Eliminar asignaciones previas del segmento
+            $query_delete = "DELETE FROM segment_assignments WHERE segment_id = :segment_id";
+            $stmt_delete = $db->prepare($query_delete);
+            $stmt_delete->execute([':segment_id' => $segment_id]);
+
+            // 2. Insertar nuevas asignaciones
+            $query_insert = "INSERT INTO segment_assignments 
+                (segment_id, user_id, role, song_id, is_md) 
+                VALUES (:segment_id, :user_id, :role, :song_id, :is_md)";
+            $stmt_insert = $db->prepare($query_insert);
+
+            foreach ($assignments as $a) {
+                $stmt_insert->execute([
+                    ':segment_id' => $segment_id,
+                    ':user_id'    => $a['user_id'],
+                    ':role'       => $a['role'],
+                    ':song_id'    => !empty($a['song_id']) ? $a['song_id'] : null,
+                    ':is_md'      => isset($a['is_md']) ? (int)$a['is_md'] : 0
+                ]);
+            }
+        } catch (PDOException $e) {
+            error_log("Database error in save_segment_assignments: " . $e->getMessage());
+            throw $e;
+        } catch (Exception $e) {
+            error_log("Error in save_segment_assignments: " . $e->getMessage());
             throw $e;
         }
     }

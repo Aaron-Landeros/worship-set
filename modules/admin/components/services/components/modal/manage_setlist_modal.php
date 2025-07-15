@@ -81,13 +81,13 @@
                                 <?php else: ?>
 
                                     <?php
-                                        foreach($setlist as $song):
-                                            $song_id = $song['song_id'];
-                                            $song_key = $song['key_signature'] ?: 'Original';
-                                            $song = fetch_song_data($db, $song_id);
-                                            
-                                            include '../components/services/components/card/setlist_songs_card.php';
-                                        endforeach; 
+                                    foreach ($setlist as $song):
+                                        $song_id = $song['song_id'];
+                                        $song_key = $song['key_signature'] ?: 'Original';
+                                        $song = fetch_song_data($db, $song_id);
+
+                                        include '../components/services/components/card/setlist_songs_card.php';
+                                    endforeach;
                                     ?>
                                 <?php endif; ?>
                             </div>
@@ -96,71 +96,104 @@
 
                     <!-- TAB 2: Assignments -->
                     <div class="tab-pane fade" id="tabAssignments" role="tabpanel">
-                        <div class="mb-4">
-                            <h6 class="fw-bold text-primary mb-3">
-                                <i class="material-symbols-rounded me-1">group</i> Assign Musicians & Singers
-                            </h6>
+                        <h6 class="fw-bold text-primary mb-3">
+                            <i class="material-symbols-rounded me-1">group</i> Assign Musicians & Singers
+                        </h6>
 
-                            <!-- Barra de búsqueda y filtros -->
-                            <div class="d-flex gap-2 mb-3">
-                                <input type="text" id="musicianSearch" class="form-control form-control-sm" placeholder="Search musician...">
-                                <select id="filterRole" class="form-select form-select-sm" style="width: 150px;">
-                                    <option value="">All</option>
-                                    <option value="musician">Musicians</option>
-                                    <option value="singer">Singers</option>
-                                </select>
-                            </div>
-
-                            <!-- Contenedor dinámico -->
-                            <div class="row g-3" id="musicianAssignmentsGrid">
-                                <!-- Ejemplo de Card -->
-                                <div class="col-12 col-md-6 col-lg-4 musician-card" data-role="musician">
-                                    <div class="card shadow-sm border-0 h-100">
-                                        <div class="card-body d-flex flex-column">
-                                            <div class="d-flex align-items-center mb-3">
-                                                <img src="https://ui-avatars.com/api/?name=Nohemí+Landeros&background=random&size=64&rounded=true"
-                                                    class="rounded-circle me-3" width="48" height="48">
-                                                <div>
-                                                    <h6 class="fw-bold mb-0">Nohemí Landeros</h6>
-                                                    <small class="text-muted">Position: Vocal</small>
-                                                </div>
-                                            </div>
-                                            <!-- Selector de rol -->
-                                            <div class="mb-2">
-                                                <label class="form-label small">Role</label>
-                                                <select class="form-select form-select-sm musician-role">
-                                                    <option value="">Select Role</option>
-                                                    <option value="Vocal">Vocal</option>
-                                                    <option value="Guitar">Guitar</option>
-                                                    <option value="Drums">Drums</option>
-                                                    <option value="Bass">Bass</option>
-                                                    <option value="Keyboard">Keyboard</option>
-                                                </select>
-                                            </div>
-                                            <!-- Selector dinámico de canción (si es vocal) -->
-                                            <div class="song-select-wrapper d-none">
-                                                <label class="form-label small">Assigned Song</label>
-                                                <select class="form-select form-select-sm song-select">
-                                                    <option value="">Choose Song</option>
-                                                    <!-- Canciones del setlist se cargan dinámicamente -->
-                                                </select>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
+                        <!-- Barra de búsqueda -->
+                        <div class="d-flex gap-2 mb-3">
+                            <input data-church-id="<?= $church_id ?>" type="text" id="musician_search" class="form-control" placeholder="Search musician by name...">
+                            <button class="btn btn-primary" id="btnAddMusician" disabled>
+                                <i class="material-symbols-rounded align-middle">person_add</i> Add
+                            </button>
                         </div>
 
+                        <!-- Resultados de búsqueda -->
+                        <div id="searchResults" class="border rounded p-2 mb-3 bg-light" style="max-height: 150px; overflow-y: auto;">
+                            <p class="text-muted small text-center mb-0">Start typing to search...</p>
+                        </div>
+
+                        <!-- Lista de asignados -->
+                        <h6 class="fw-bold text-secondary mt-4 mb-2">Assigned Members</h6>
+                        <div class="table-responsive border rounded p-2 bg-white">
+                            <table class="table table-sm align-middle mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Name</th>
+                                        <th>Role</th>
+                                        <th>Song to Lead</th>
+                                        <th>MD</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="assignedMusicians" data-service-id="<?= $service_id ?>" data-segment-id="<?= $segment_id ?>">
+                                    <?php if (!empty($assignments)): ?>
+                                        <?php foreach ($assignments as $a): ?>
+                                            <tr data-user-id="<?= $a['user_id'] ?>">
+                                                <!-- Nombre -->
+                                                <td><?= htmlspecialchars($a['user_name']) ?></td>
+
+                                                <!-- Rol -->
+                                                <td>
+                                                    <select class="form-select form-select-sm musician-role">
+                                                        <option value="">Select Role</option>
+                                                        <option value="Lead Vocal" <?= $a['role'] == 'Lead Vocal' ? 'selected' : '' ?>>Lead Vocal</option>
+                                                        <option value="Background Vocal" <?= $a['role'] == 'Background Vocal' ? 'selected' : '' ?>>Background Vocal</option>
+                                                        <option value="Guitar" <?= $a['role'] == 'Guitar' ? 'selected' : '' ?>>Guitar</option>
+                                                        <option value="Bass" <?= $a['role'] == 'Bass' ? 'selected' : '' ?>>Bass</option>
+                                                        <option value="Drums" <?= $a['role'] == 'Drums' ? 'selected' : '' ?>>Drums</option>
+                                                        <option value="Keyboard" <?= $a['role'] == 'Keyboard' ? 'selected' : '' ?>>Keyboard</option>
+                                                    </select>
+                                                </td>
+
+                                                <!-- Canción asignada -->
+                                                <td>
+                                                    <select class="form-select form-select-sm song-select <?= $a['role'] == 'Lead Vocal' ? '' : 'd-none' ?>">
+                                                        <option value="">Choose Song</option>
+                                                        <?php foreach ($setlist as $song_item):
+                                                            $song_data = fetch_song_data($db, $song_item['song_id']); ?>
+                                                            <option value="<?= $song_item['song_id'] ?>" <?= $a['song_id'] == $song_item['song_id'] ? 'selected' : '' ?>>
+                                                                <?= htmlspecialchars($song_data['title']) ?>
+                                                            </option>
+                                                        <?php endforeach; ?>
+                                                    </select>
+                                                </td>
+
+                                                <!-- Checkbox MD -->
+                                                <td class="text-center">
+                                                    <input type="checkbox" class="form-check-input md-checkbox" <?= $a['is_md'] ? 'checked' : '' ?>>
+                                                </td>
+
+                                                <!-- Botón eliminar -->
+                                                <td>
+                                                    <button class="btn btn-sm btn-danger btn-remove-member">
+                                                        <i class="material-symbols-rounded">delete</i>
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        <?php endforeach; ?>
+                                    <?php else: ?>
+                                        <tr>
+                                            <td colspan="5" class="text-center text-muted small">No musicians assigned yet</td>
+                                        </tr>
+                                    <?php endif; ?>
+                                </tbody>
+
+                            </table>
+                        </div>
                     </div>
+
                 </div>
             </div>
 
             <!-- FOOTER -->
             <div class="modal-footer bg-light rounded-bottom-4">
                 <button class="btn btn-outline-secondary" data-bs-dismiss="modal">Close</button>
-                <button class="btn btn-primary" id="saveSetlistBtn">
+                <button class="btn btn-primary" id="btn_save_setlist"
+                    data-service-id="<?= $service_id ?>" data-segment-id="<?= $segment_id ?>">
                     <i class="material-symbols-rounded align-middle me-1">save</i> Save Changes
                 </button>
+
             </div>
         </div>
     </div>

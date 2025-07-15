@@ -55,7 +55,7 @@
             </li>
 
             <li class="nav-item">
-                <a href="#" class="nav-link">
+                <a href="#" class="nav-link" id="fetch_songs">
                     <span class="material-symbols-rounded">music_note</span>
                     <span class="nav-label">Songs</span>
                 </a>

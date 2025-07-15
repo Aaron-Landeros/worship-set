@@ -338,4 +338,87 @@ switch ($user_request) {
             echo json_encode(['status' => 'error', 'message' => $e->getMessage()]);
         }
         break;
+
+    case 'search_musicians':
+        try {
+            include '../../../utilities/db_conn.php';
+            $db = new PDO($dsn, $username, $password);
+
+            $query = filter_input(INPUT_POST, 'query');
+
+            if (!$query) {
+                throw new Exception('Search term is required.');
+            }
+
+            $musicians = search_musicians($db, $query, $church_id);
+
+            echo json_encode(['status' => 'success', 'members' => $musicians]);
+        } catch (PDOException | ErrorException | Exception $e) {
+            error_log('Database Error: ' . $e->getMessage());
+            $message = $development_mode ? 'Database error occurred: ' . $e->getMessage() : $user_message;
+            echo json_encode(['status' => 'error', 'message' => $e->getMessage()]);
+        }
+        break;
+
+    case 'fetch_setlist_songs':
+        try {
+            include '../../../utilities/db_conn.php';
+            $db = new PDO($dsn, $username, $password);
+
+            $service_id = filter_input(INPUT_POST, 'service_id', FILTER_SANITIZE_NUMBER_INT);
+            $segment_id = filter_input(INPUT_POST, 'segment_id', FILTER_SANITIZE_NUMBER_INT);
+            $setlist = fetch_segment_setlist_song_data($db, $segment_id);
+
+            echo json_encode(['status' => 'success', 'message' => 'Setlist songs fetched successfully', 'songs' => $setlist]);
+        } catch (PDOException | ErrorException | Exception $e) {
+            error_log('Database Error: ' . $e->getMessage());
+            $message = $development_mode ? 'Database error occurred: ' . $e->getMessage() : $user_message;
+            echo json_encode(['status' => 'error', 'message' => $e->getMessage()]);
+        }
+        break;
+    
+    case 'save_setlist_assignments':
+        try {
+            include '../../../utilities/db_conn.php';
+            $db = new PDO($dsn, $username, $password);
+
+            $segment_id = filter_input(INPUT_POST, 'segment_id', FILTER_SANITIZE_NUMBER_INT);
+            $service_id = filter_input(INPUT_POST, 'service_id', FILTER_SANITIZE_NUMBER_INT);
+            $assignments = json_decode($_POST['assignments'], true);
+
+            if (!$segment_id || !$assignments) {
+                throw new Exception('Segment ID and assignments are required.');
+            }
+
+            $db->beginTransaction();
+            save_segment_assignments($db, $segment_id, $assignments);
+            $db->commit();
+
+            echo json_encode(['status' => 'success', 'message' => 'Assignments saved successfully']);
+        } catch (PDOException | Exception $e) {
+            if ($db->inTransaction()) $db->rollBack();
+            error_log('Error: ' . $e->getMessage());
+            echo json_encode(['status' => 'error', 'message' => $e->getMessage()]);
+        }
+        break;
+    
+    case 'fetch_songs':
+        try {
+            include '../../../utilities/db_conn.php';
+            $db = new PDO($dsn, $username, $password);
+
+            $songs = fetch_all_songs($db, $church_id);
+            ob_start();
+            include '../components/songs/songs.php';
+            $content = ob_get_clean();  
+            if (empty($songs)) {
+                $content = '<div class="alert alert-info">No songs found.</div>';
+            }
+            echo json_encode(['status' => 'success', 'message' => 'Songs fetched successfully', 'view' => $content]);
+        } catch (PDOException | ErrorException | Exception $e) {
+            error_log('Database Error: ' . $e->getMessage());
+            $message = $development_mode ? 'Database error occurred: ' . $e->getMessage() : $user_message;
+            echo json_encode(['status' => 'error', 'message' => $message]);
+        }
+        break;
 }

@@ -14,11 +14,13 @@ document.addEventListener("DOMContentLoaded", function () {
     dynamic_styles.push("utilities/evo-calendar/css/evo-calendar.royal-navy.css");
     dynamic_styles.push("utilities/entheo/entheo_styles.css");
 
+    // Admin styles
+      dynamic_styles.push("assets/css/admin.css");
+      dynamic_styles.push("https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0");
+
 
     if (role === "admin") {
-      // Admin styles
-    dynamic_styles.push("assets/css/admin.css");
-    dynamic_styles.push("https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0");
+      
 
     }
 

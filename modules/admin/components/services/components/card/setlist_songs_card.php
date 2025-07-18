@@ -11,7 +11,6 @@
             <button data-service-id="<?= $service_id ?>" data-segment-id="<?= $segment_id ?>" data-song-id="<?= $song['id'] ?>" class="btn btn-sm btn-outline-danger btn_remove_setlist_song" title="Remove Song">
                 <span class="material-symbols-rounded align-middle">delete</span>
             </button>
-            <span class="handle material-symbols-rounded text-muted" style="cursor:grab;">drag_indicator</span>
         </div>
     </div>
 </div>

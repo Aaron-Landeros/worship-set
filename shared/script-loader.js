@@ -18,9 +18,13 @@ if (page === "login") {
   controller_scripts.push("modules/login/js/login_event_controller.js");
 } else {
 
+  // Carga de scripts comunes
+  controller_scripts.push("shared/navigation/js/navigation_event_controller.js");
+  
   // Carga de scripts específicos por rol
   if (role === "admin") {
-    controller_scripts.push("modules/admin/js/admin_event_controller.js");
+    controller_scripts.push("modules/admin/event/admin_event_controller.js");
+    controller_scripts.push("modules/songs/event/songs_event_controller.js");
   }
 
   if (role === "PROJECT_MANAGER") {

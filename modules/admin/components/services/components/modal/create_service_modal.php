@@ -26,7 +26,7 @@
                         </div>
                         <div class="col-md-6">
                             <label for="notes" class="form-label">Notes (optional)</label>
-                            <input type="text" class="form-control" id="notes" name="notes">
+                            <textarea class="form-control" id="notes" name="notes" rows="5" placeholder="Enter any additional notes here..."></textarea>
                         </div>
                     </div>
                 </form>

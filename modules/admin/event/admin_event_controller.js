@@ -1,6 +1,47 @@
 $(function () {
     const admin_controller = 'modules/admin/controller/admin_controller.php';
 
+     // Función para abrir/cerrar dropdown
+    function toggleDropdown($dropdown, isOpen) {
+        const $menu = $dropdown.find(".dropdown-menu");
+        $dropdown.toggleClass("open", isOpen);
+        $menu.css("height", isOpen ? $menu.prop("scrollHeight") + "px" : 0);
+    }
+
+    // Cerrar todos los dropdowns abiertos
+    function closeAllDropdowns() {
+        $(".dropdown-container.open").each(function () {
+            toggleDropdown($(this), false);
+        });
+    }
+
+    // Click en toggles de dropdown
+    $(".dropdown-toggle").on("click", function (e) {
+        e.preventDefault();
+        const $dropdown = $(this).closest(".dropdown-container");
+        const isOpen = $dropdown.hasClass("open");
+        closeAllDropdowns();
+        toggleDropdown($dropdown, !isOpen);
+    });
+
+    // Toggle del sidebar (botones)
+    $(".sidebar-toggler, .sidebar-menu-button, .menu-toggle-btn").on("click", function () {
+        closeAllDropdowns();
+        $(".sidebar").toggleClass("collapsed");
+
+        // Cambiar ícono dinámicamente
+        const $icon = $(this).find(".material-symbols-rounded");
+        if ($(".sidebar").hasClass("collapsed")) {
+            $icon.text("menu");
+        } else {
+            $icon.text("close");
+        }
+    });
+
+    // Colapsar por defecto en pantallas pequeñas
+    if ($(window).width() <= 1024) {
+        $(".sidebar").addClass("collapsed");
+    }
 
     function fetchAdminData(){
         var user_request = 'fetch_admin_data';
@@ -43,49 +84,36 @@ $(function () {
     $(document).on('click', '#btn_admin', function() {
     });
 
-    // Toggle the visibility of a dropdown menu
-    const toggleDropdown = (dropdown, menu, isOpen) => {
-    dropdown.classList.toggle("open", isOpen);
-    menu.style.height = isOpen ? `${menu.scrollHeight}px` : 0;
-    };
-    // Close all open dropdowns
-    const closeAllDropdowns = () => {
-    document.querySelectorAll(".dropdown-container.open").forEach((openDropdown) => {
-        toggleDropdown(openDropdown, openDropdown.querySelector(".dropdown-menu"), false);
-    });
-    };
-    // Attach click event to all dropdown toggles
-    document.querySelectorAll(".dropdown-toggle").forEach((dropdownToggle) => {
-    dropdownToggle.addEventListener("click", (e) => {
+    // Evento genérico para todos los links del sidebar
+    $(document).on('click', '.sidebar-item', function (e) {
         e.preventDefault();
-        const dropdown = dropdownToggle.closest(".dropdown-container");
-        const menu = dropdown.querySelector(".dropdown-menu");
-        const isOpen = dropdown.classList.contains("open");
-        closeAllDropdowns(); // Close all open dropdowns
-        toggleDropdown(dropdown, menu, !isOpen); // Toggle current dropdown visibility
-    });
-    });
-    // Attach click event to sidebar toggle buttons
-    document.querySelectorAll(".sidebar-toggler, .sidebar-menu-button").forEach((button) => {
-    button.addEventListener("click", () => {
-        closeAllDropdowns(); // Close all open dropdowns
-        document.querySelector(".sidebar").classList.toggle("collapsed"); // Toggle collapsed class on sidebar
-    });
-    });
-    // Collapse sidebar by default on small screens
-    if (window.innerWidth <= 1024) document.querySelector(".sidebar").classList.add("collapsed");
 
+        // Guardamos el link clickeado
+        const $link = $(this);
+        const user_request = $link.attr('id'); // ID del link usado como request
 
-    $(document).on('click', '#fetch_users', function (e) {
-        e.preventDefault();
+        if (!user_request) return; // Si no tiene ID, no hace nada
+        // definir el controlador en base al ID del link
+        const controller = $link.data('controller') || admin_controller;
+        //armar controller URL
+        const controllerUrl = 'modules/'  + controller + '/controller/' + controller +  '_controller.php';
+
+        console.log('Controller URL:', controllerUrl);
+
         $.ajax({
-            url: admin_controller,
+            url: controllerUrl,
             type: 'POST',
-            data: { user_request: 'fetch_users' },
+            data: { user_request: user_request },
             success: function (data) {
                 var response = JSON.parse(data);
                 if (response.status === 'success') {
-                    $('#app-content').html(response.view);
+                    $('#app-content').html(response.view); 
+
+                    // ✅ Cerrar el sidebar
+                    $('.sidebar').addClass('collapsed');
+                    // ✅ Cambiar icono del botón menú si aplica
+                    $('.menu-toggle-btn .material-symbols-rounded').text('menu');
+
                 } else {
                     Swal.fire({
                         icon: 'error',
@@ -98,35 +126,7 @@ $(function () {
                 Swal.fire({
                     icon: 'error',
                     title: 'Error',
-                    text: 'An error occurred while fetching users.'
-                });
-            }
-        });
-    });
-
-    $(document).on('click', '#fetch_teams', function (e){
-        e.preventDefault();
-        $.ajax({
-            url: admin_controller,
-            type: 'POST',
-            data: { user_request: 'fetch_teams' },
-            success: function (data) {
-                var response = JSON.parse(data);
-                if (response.status === 'success') {
-                    $('#app-content').html(response.view);
-                } else {
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Error',
-                        text: response.message
-                    });
-                }
-            },
-            error: function () {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Error',
-                    text: 'An error occurred while fetching teams.'
+                    text: 'An error occurred while fetching content.'
                 });
             }
         });
@@ -162,36 +162,8 @@ $(function () {
     });
 
     $(document).on('hide.bs.modal', '#teamDetailsModal', function () {
-        $(this).closet('.modal-backdrop').remove();
+        $(this).closest('.modal-backdrop').remove();
         $(this).remove();
-    });
-
-    $(document).on('click', '#fetch_services', function (e) {
-        e.preventDefault();
-        $.ajax({
-            url: admin_controller,
-            type: 'POST',
-            data: { user_request: 'fetch_services' },
-            success: function (data) {
-                var response = JSON.parse(data);
-                if (response.status === 'success') {
-                    $('#app-content').html(response.view);
-                } else {
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Error',
-                        text: response.message
-                    });
-                }
-            },
-            error: function () {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Error',
-                    text: 'An error occurred while fetching events.'
-                });
-            }
-        });
     });
 
     $(document).on('click', '#create_service', function (e) {
@@ -582,7 +554,6 @@ $(function () {
         }
     });
 
-
     $(document).on('click', '#btn_save_setlist', function () {
         let service_id = $(this).data('service-id');
         let segment_id = $(this).data('segment-id');
@@ -640,33 +611,5 @@ $(function () {
         });
     });
 
-    // Songs Module Functionality
-    $(document).on('click', '#fetch_songs', function (e) {
-        e.preventDefault();
-        $.ajax({
-            url: admin_controller,
-            type: 'POST',
-            data: { user_request: 'fetch_songs' },
-            success: function (data) {
-                var response = JSON.parse(data);
-                if (response.status === 'success') {
-                    $('#app-content').html(response.view);
-                } else {
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Error',
-                        text: response.message
-                    });
-                }
-            },
-            error: function () {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Error',
-                    text: 'An error occurred while fetching users.'
-                });
-            }
-        });
-    });
 
 });

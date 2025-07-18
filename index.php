@@ -34,7 +34,7 @@ $user_role = $_SESSION["role"];
 <body data-page="index" data-user-role="<?= $user_role ?>">
     <?php include 'shared/components/sidebar.php' ?>
 
-    <div class="main-container ms-md-5 ps-md-5" id="app-content"></div>
+    <div class="main-container ms-md-5 ps-md-5 mt-5 pt-3 mt-md-0 pt-md-0" id="app-content"></div>
 
     <script src="shared/script-loader.js"></script>
 

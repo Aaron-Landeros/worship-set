@@ -285,7 +285,7 @@
 
     function fetch_all_songs($db, $church_id) {
         try {
-            $query = "SELECT * FROM songs WHERE church_id = :church_id ORDER BY title";
+            $query = "SELECT * FROM songs WHERE church_id = :church_id ORDER BY id DESC";
             $stmt = $db->prepare($query);
             $stmt->bindValue(':church_id', $church_id);
             $stmt->execute();
